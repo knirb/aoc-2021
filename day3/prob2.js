@@ -5,8 +5,7 @@ fs.readFile("./input.txt", "utf8", (err, data) => {
       if (arr.length === 1) return parseInt(arr[0].join(""), 2);
       const filt =
         arr.reduce((acc, cur) => {
-          acc += cur[ind] ? 1 : -1;
-          return acc;
+          return (acc += cur[ind] ? 1 : -1);
         }, 0) >= 0
           ? more
           : !more;
