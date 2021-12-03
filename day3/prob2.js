@@ -1,5 +1,4 @@
 const fs = require("fs");
-
 fs.readFile("./input.txt", "utf8", (err, data) => {
   const getAns = (data) => {
     const rec = (arr, ind, more) => {
@@ -10,8 +9,6 @@ fs.readFile("./input.txt", "utf8", (err, data) => {
           return acc;
         }, 0) >= 0
           ? more
-            ? 1
-            : 0
           : more
           ? 0
           : 1;
@@ -21,7 +18,7 @@ fs.readFile("./input.txt", "utf8", (err, data) => {
         more
       );
     };
-    return rec(data, 0, true) * rec(data, 0, false);
+    return rec(data, 0, 1) * rec(data, 0, 0);
   };
   console.log(
     getAns(data.split("\n").map((string) => string.split("").map((str) => parseInt(str))))
