@@ -9,11 +9,9 @@ fs.readFile("./input.txt", "utf8", (err, data) => {
           return acc;
         }, 0) >= 0
           ? more
-          : more
-          ? 0
-          : 1;
+          : !more;
       return rec(
-        arr.filter((nr) => nr[ind] === filt),
+        arr.filter((nr) => nr[ind] == filt),
         ind + 1,
         more
       );
