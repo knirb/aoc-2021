@@ -23,7 +23,7 @@ fs.readFile("./input.txt", "utf8", (err, data) => {
     };
     return rec(data, 0, true) * rec(data, 0, false);
   };
-  const arr = data.split("\n").map((string) => string.split("").map((str) => parseInt(str)));
-
-  console.log(getAns(arr));
+  console.log(
+    getAns(data.split("\n").map((string) => string.split("").map((str) => parseInt(str))))
+  );
 });
