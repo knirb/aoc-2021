@@ -10,8 +10,6 @@ fs.readFile("day4/input.txt", "utf8", (err, data) => {
         : table[0].split(",")
     );
 
-  const [szy, szx] = [tables[0].length, tables[0][0].length];
-
   const bingo = (table) => {
     for (let i = 0; i < table.length; i++) {
       if (
@@ -67,7 +65,6 @@ fs.readFile("day4/input.txt", "utf8", (err, data) => {
     },
     [...tables]
   );
-  console.log(winner);
   const ans = calcSum(winner[0]) * winner[1];
   console.log(ans);
 });
