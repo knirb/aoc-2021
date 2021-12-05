@@ -32,5 +32,4 @@ lines.forEach((line) => {
     }
   }
 });
-console.log(map[522 + 854 * maxsz]);
 console.log(map.filter((val) => val >= 2).length);
