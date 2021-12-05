@@ -5,13 +5,14 @@ fs.readFile("day4/input.txt", "utf8", (err, data) => {
     .split("\n\n")
     .map((row) => row.split("\n"))
     .map((table) =>
-      table.length > 1 ? table.map((row) => row.split(" ").filter((cell) => cell)) : table[0].split(",")
+      table.length > 1
+        ? table.map((row) => row.split(" ").filter((cell) => cell))
+        : table[0].split(",")
     );
 
   const [szy, szx] = [tables[0].length, tables[0][0].length];
 
   const bingo = (table) => {
-    console.log(table);
     for (let i = 0; i < table.length; i++) {
       if (table[i].reduce((acc, cur) => acc + cur, 0) >= table.length) {
         return true;
@@ -24,22 +25,13 @@ fs.readFile("day4/input.txt", "utf8", (err, data) => {
         return true;
       }
     }
-    // let d1 = 0,
-    //   d2 = 0;
-    // for (let i = 0; i < table.length; i++) {
-    //   d1 += table[i][i];
-    //   d2 += table[i][table.length - 1 - i];
-    // }
-    // if (d1 >= table.length || d2 >= table.length) {
-    //   return true;
-    // }
     return false;
   };
 
   const findIndex = (table, nr) => {
     for (let y = 0; y < table.length; y++) {
       const x = table[y].findIndex((cell) => cell === nr);
-      if (x > 0) return [x, y];
+      if (x >= 0) return [x, y];
     }
     return null;
   };
@@ -54,7 +46,7 @@ fs.readFile("day4/input.txt", "utf8", (err, data) => {
     return sum;
   };
 
-  const bingoArr = list.reduce((acc, cur, ind, arr) => {
+  const winner = list.reduce((acc, cur, ind, arr) => {
     if (acc.length < 4) return acc;
     if (ind === 0) {
       for (let len = 0; len < acc.length; len++) {
@@ -73,17 +65,11 @@ fs.readFile("day4/input.txt", "utf8", (err, data) => {
         acc[i][coords[1]][coords[0]] = 1;
       }
     });
-    if (ind > 20) {
-      const id = acc.findIndex((table) => bingo(table));
-      if (id >= 0) {
-        // console.log("bingo!", id, ind, parseInt(cur));
-      }
-      if (id >= 0) return [acc[id], tables[id], parseInt(cur)];
-    }
+    const id = acc.findIndex((table) => bingo(table));
+    if (id >= 0) return [acc[id], tables[id], parseInt(cur)];
     return acc;
   }, new Array(tables.length));
 
-  const ans = calcSum(...bingoArr.slice(0, 2)) * bingoArr[2];
-  console.log(calcSum(...bingoArr.slice(0, 2)), bingoArr[0], bingoArr[1], bingoArr[2]);
+  const ans = calcSum(...winner.slice(0, 2)) * winner[2];
   console.log(ans);
 });
