@@ -6,7 +6,6 @@ const fish = fs
   .map((str) => parseInt(str));
 
 const agePop = (pop) => {
-  const children = pop[0];
   const res = [...pop.slice(1), pop[0]];
   res[6] += pop[0];
   return res;
