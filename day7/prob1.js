@@ -5,11 +5,6 @@ const data = fs
   .split(",")
   .map((str) => parseInt(str));
 
-const maxDist = Math.max(...data);
-let maxFuel = Number.POSITIVE_INFINITY;
-for (let i = 0; i < maxDist + 1; i++) {
-  const cost = data.reduce((acc, cur) => acc + Math.abs(cur - i), 0);
-  if (cost < maxFuel) maxFuel = cost;
-}
-
-console.log(maxFuel);
+const median = data.sort((a, b) => (a > b ? 1 : -1))[data.length / 2];
+const cost = data.reduce((acc, cur) => acc + Math.abs(cur - median), 0);
+console.log(cost);
