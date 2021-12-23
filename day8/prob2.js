@@ -78,7 +78,7 @@ const ans = data.reduce((acc, cur) => {
   nrs[8] = encoded.find((arr) => sumArr(arr) === 7);
   nrs[3] = l5nrs.find((arr) => isSubset(arr, encoded[0]));
   nrs[6] = l6nrs.find((arr) => !isSubset(arr, encoded[0]));
-  nrs[9] = l6nrs.find((arr) => isSubset(arr, nrs[3]));
+  nrs[9] = l6nrs.find((arr) => isSubset(arr, encoded[2]));
   nrs[5] = l5nrs.find((arr) => vecDiff(arr, nrs[6]) < 2);
   nrs[2] = l5nrs.find((arr) => !!vecDiff(arr, nrs[5]) && !!vecDiff(arr, nrs[3]));
   nrs[0] = l6nrs.find((arr) => !!vecDiff(arr, nrs[6]) && !!vecDiff(arr, nrs[9]));
