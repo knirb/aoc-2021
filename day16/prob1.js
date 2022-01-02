@@ -1,6 +1,6 @@
 const fs = require("fs");
 
-const message = fs.readFileSync(`${__dirname}/operation.txt`, "utf-8", (err, data) => data);
+const message = fs.readFileSync(`${__dirname}/input.txt`, "utf-8", (err, data) => data);
 
 //Packet info:
 //0-2 : Version
@@ -21,6 +21,7 @@ class Packet {
   version;
   type;
   value;
+  literalValue;
   subpackets = [];
 
   constructor(version, type) {
@@ -39,8 +40,39 @@ class Packet {
     this.value = value;
   }
 
+  setLiteralValue(value) {
+    this.literalValue = value;
+  }
+
   getValue() {
-    return this.value;
+    switch (this.type) {
+      case 0:
+        let sum = 0;
+        this.subpackets.forEach((packet) => (sum += packet.getValue()));
+        return sum;
+      case 1:
+        let prod = 1;
+        this.subpackets.forEach((packet) => (prod *= packet.getValue()));
+        return prod;
+      case 2:
+        const minValues = [];
+        this.subpackets.forEach((packet) => minValues.push(packet.getValue()));
+        return Math.min(...minValues);
+      case 3:
+        const maxValues = [];
+        this.subpackets.forEach((packet) => maxValues.push(packet.getValue()));
+        return Math.max(...maxValues);
+      case 4:
+        return parseInt(this.value, 2);
+      case 5:
+        return this.subpackets[0].getValue() > this.subpackets[1].getValue() ? 1 : 0;
+      case 6:
+        return this.subpackets[0].getValue() < this.subpackets[1].getValue() ? 1 : 0;
+      case 7:
+        return this.subpackets[0].getValue() === this.subpackets[1].getValue() ? 1 : 0;
+      default:
+        break;
+    }
   }
 
   addSubpacket(packet) {
@@ -53,6 +85,12 @@ class Packet {
 
   hasSubpackets() {
     return this.subpackets.length > 0;
+  }
+
+  getSummedVersions() {
+    let summedVersions = this.version;
+    this.subpackets.forEach((packet) => (summedVersions += packet.getSummedVersions()));
+    return summedVersions;
   }
 }
 
@@ -83,21 +121,16 @@ class Parser {
     }
     return res;
   }
-  static decodePackets(string) {
+
+  static parsePackets(string) {
     let packets = [];
     let offset = 0;
-
-    const version = parseInt(string.slice(0 + offset, 3 + offset), 2);
-    const type = parseInt(string.slice(3 + offset, 6 + offset), 2);
-    const packet = new Packet(version, type);
-    if (packet.getType() === "VALUE") {
-      const value = this.parseLiteralValue(string.slice(offset + 6, string.length));
-      packet.setValue(value);
-    } else {
-      const subPackets = this.parseOperation(string.slice(offset + 6, string.length));
-      subPackets.forEach((subpacket) => packet.addSubpacket(subpacket));
+    while (offset < string.length - 1) {
+      const [packet, length] = this.parseOnePacket(string.slice(offset, string.length));
+      if (!packet || !length) break;
+      offset += length;
+      packets.push(packet);
     }
-    packets.push(packet);
     return packets;
   }
 
@@ -105,7 +138,8 @@ class Parser {
     let offset = 0;
     let reachedEnd = false;
     let bits = "";
-    while (!reachedEnd && offset < string.length) {
+
+    while (!reachedEnd) {
       const prefix = string.slice(0 + offset, 1 + offset);
       const nr = string.slice(1 + offset, 5 + offset);
       bits += nr;
@@ -114,22 +148,57 @@ class Parser {
         reachedEnd = true;
       }
     }
-    return bits;
+    return [bits, offset];
   }
 
   static parseOperation(string) {
     const lengthTypeId = parseInt(string[0]);
-    console.log(lengthTypeId);
     if (lengthTypeId) {
       const noPackets = parseInt(string.slice(1, 12), 2);
-      return [noPackets];
+      const [packets, subpacketsLength] = this.parseNPackets(string.slice(12, string.length), noPackets);
+      return [packets, subpacketsLength + 12];
     } else {
       const subpacketsLength = parseInt(string.slice(1, 16), 2);
-      return [subpacketsLength];
+      const packets = this.parsePackets(string.slice(16, 16 + subpacketsLength));
+      return [packets, subpacketsLength + 16];
+    }
+  }
+
+  static parseNPackets(string, n) {
+    const packets = [];
+    let offset = 0;
+    for (let i = 0; i < n; i++) {
+      const [packet, length] = this.parseOnePacket(string.slice(offset, string.length));
+      packets.push(packet);
+      offset += length;
+    }
+    return [packets, offset];
+  }
+
+  static parseOnePacket(string) {
+    try {
+      const version = parseInt(string.slice(0, 3), 2);
+      const type = parseInt(string.slice(3, 6), 2);
+      const packet = new Packet(version, type);
+      let offset = 6;
+      if (packet.getType() === "VALUE") {
+        const [value, length] = this.parseLiteralValue(string.slice(6, string.length));
+        packet.setValue(value, 2);
+        packet.setLiteralValue(parseInt(value, 2));
+        return [packet, offset + length];
+      } else {
+        const [subPackets, length] = this.parseOperation(string.slice(6, string.length));
+        subPackets.forEach((subpacket) => packet.addSubpacket(subpacket));
+        return [packet, offset + length];
+      }
+    } catch (e) {
+      return [null, null];
     }
   }
 }
 
 const binary = Parser.parseHexToBin(message);
-const decoded = Parser.decodePackets(binary);
-console.log(decoded);
+const decoded = Parser.parsePackets(binary);
+
+console.log("Part 1: ", decoded[0].getSummedVersions());
+console.log("Part 2: ", decoded[0].getValue());
